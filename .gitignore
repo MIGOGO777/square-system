@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 运行时数据
+data/cache/
+data/reports/
+
+# 环境与密钥
+.env
+*.key
+*.pem
+
+# 系统
+.DS_Store

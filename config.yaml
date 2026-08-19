@@ -1,0 +1,116 @@
+# 正方形系统 v2.2 配置
+
+system:
+  name: "正方形系统 v2.2"
+  version: "2.2.0"
+  description: "11个数学模型 × 原子化规则 × 主动发现 × 反事实推理 — 对接 a-stock-data v2.1"
+
+# 数据源配置
+data:
+  cache_dir: "data/cache"
+  reports_dir: "data/reports"
+  history_temps_days: 60  # 温度百分位的历史天数
+
+# 规则引擎配置
+rules:
+  dimensions:
+    - value       # 价值判断
+    - industry    # 行业判断
+    - emotion     # 情绪判断
+    - trend       # 趋势判断
+    - macro       # 宏观判断
+    - risk        # 风险判断
+
+# 候选池配置
+pool:
+  max_candidates: 15       # 最终候选数量
+  min_market_cap: 20       # 最小市值（亿）
+  min_listing_days: 365    # 最小上市天数
+  max_debt_ratio: 70       # 最大资产负债率（%）
+
+# 市场状态配置
+regime:
+  bull_percentile: 80      # 温度百分位>BULL
+  bear_percentile: 20      # 温度百分位<BEAR
+  confirmation_layers: 2   # 至少几层确认
+
+# 主动发现配置
+discovery:
+  max_per_route: 10        # 每条路线最大发现数
+  cross_validation_min: 2  # 交叉验证最少路线数
+
+# 风控配置
+risk:
+  max_position_pct: 25     # 单只最大仓位（%）
+  daily_drawdown_limit: -3 # 日回撤熔断（%）
+  weekly_drawdown_limit: -5 # 周回撤熔断（%）
+  monthly_drawdown_limit: -10 # 月回撤熔断（%）
+  consecutive_stops_limit: 3 # 连续止损熔断次数
+
+# 报告配置
+report:
+  output_path: "data/reports/LATEST.md"
+  archive: true            # 是否存档历史报告
+
+# 数学模型配置
+models:
+  garch:
+    enabled: true
+    p: 1                    # GARCH(p,q)
+    q: 1
+    vol_high_threshold: 4.0 # predicted vol > this → SELL
+    vol_med_threshold: 2.5  # predicted vol > this → WARNING
+    vol_low_threshold: 1.5  # predicted vol > this → HOLD, else BUY
+
+  hmm:
+    enabled: true
+    n_states: 3             # BULL/BEAR/SIDEWAYS
+    min_history: 30         # 最少观测历史天数
+    convergence_tol: 1e-4
+    max_iterations: 100
+
+  markowitz:
+    enabled: true
+    risk_free_rate: 0.02    # 年化无风险利率
+    max_weight: 0.30        # 单只最大权重
+    min_stocks: 3           # 最少标的数
+    optimization_method: "max_sharpe"  # or "min_variance"
+
+  gbm:
+    enabled: true
+    min_returns: 30         # 最少收益率观测数
+    normality_alpha: 0.05   # Jarque-Bera显著性水平
+    mu_strong: 0.15         # 强漂移阈值（年化）
+    mu_moderate: 0.05       # 温和漂移阈值
+
+  cointegration:
+    enabled: true
+    adf_p_threshold: 0.05   # ADF检验p值
+    spread_threshold: 2.0   # z-score偏离阈值
+    min_overlap: 30         # 最少重叠观测数
+    half_life_max: 30       # 最大半衰期（天）
+
+  monte_carlo:
+    enabled: true
+    n_simulations: 10000    # 模拟次数
+    horizon: 5              # 模拟天数
+    confidence_level: 0.95  # VaR置信度
+
+  fama_french:
+    enabled: true
+    risk_free_rate: 0.02    # 年化无风险利率
+
+  black_scholes:
+    enabled: true
+    risk_free_rate: 0.02    # 年化无风险利率
+
+  almgren_chriss:
+    enabled: true
+    risk_aversion: 1e-6     # 风险厌恶系数
+    default_position_value: 100000  # 默认持仓金额（元）
+
+  rl_weight:
+    enabled: true
+    learning_rate: 0.05     # 学习率
+    decay: 0.95             # 权重衰减
+    state_path: "data/cache/rl_weights.json"
